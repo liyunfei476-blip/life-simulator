@@ -1,0 +1,52 @@
+name: Validate and publish game
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run regression tests
+        run: npm test
+      - name: Prepare public files only
+        run: |
+          mkdir -p _site/js _site/css _site/assets
+          cp index.html _site/index.html
+          cp css/style.css css/journey.css _site/css/
+          cp assets/cover.jpg assets/world-atlas.jpg _site/assets/
+          for file in config worlds adventure engine round storage events network ai interface app; do
+            cp "js/$file.js" "_site/js/$file.js"
+          done
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy game
+        id: deployment
+        uses: actions/deploy-pages@v4

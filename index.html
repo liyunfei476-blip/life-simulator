@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>穿越人生模拟器</title>
+  <meta name="description" content="六种世界，自由文字交互。选择天赋，书写自己的穿越人生。支持本地试玩与自备模型服务。">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <link rel="icon" href="assets/cover.jpg" type="image/jpeg">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/journey.css">
+</head>
+<body>
+  <canvas id="star-canvas" aria-hidden="true"></canvas>
+
+  <section id="screen-home" class="screen">
+    <nav class="home-nav" aria-label="主导航">
+      <a class="wordmark" href="#">异世手记 <span>CROSSING LIVES</span></a>
+      <div><button id="btn-home-saves" class="ghost">旅程存档</button><button id="btn-home-settings" class="ghost">设置</button></div>
+    </nav>
+    <div class="home-content">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">一场由你落笔的人生</p>
+          <h1>此生之外，<br>还有<span>万千可能。</span></h1>
+          <p class="hero-description">推开另一扇门，成为故事里的人。<br>去探索，去成长，或只在山间住下。<br>不必追赶主线，你的选择就是故事。</p>
+          <div class="hero-actions"><button id="btn-new-journey" class="primary">开启新的人生 <span>↗</span></button><button id="btn-continue" class="secondary">继续旅程 →</button></div>
+          <p id="home-save-info" class="home-save-info"></p>
+          <div class="hero-facts"><span><b>06</b> 可选世界</span><span><b>18</b> 探索地点</span><span><b>∞</b> 你的想象</span></div>
+        </div>
+        <div class="hero-art" role="img" aria-label="星空与云海间的穿越之门"><div class="art-caption"><span>THE NEXT CHAPTER</span><p>每一次醒来，<br>都是新的序章。</p></div><span class="art-coordinate">35° N / 未知之境</span></div>
+      </section>
+      <section class="world-gallery">
+        <div class="section-heading"><div><p class="eyebrow">CHOOSE YOUR WORLD</p><h2>你想在哪里醒来？</h2></div><p>六种风物，六段未写的人生</p></div>
+        <div id="home-worlds" class="home-worlds"></div>
+      </section>
+      <section class="home-features"><article><span>01 / 即时旅程</span><h3>不等待，也能好好玩。</h3><p>探索、研习、休整与制作都在本地结算，打开即玩。</p></article><article><span>02 / 自由表达</span><h3>选项之外，还有你的想法。</h3><p>接入模型后，自行描述行动、向世界提问，让剧情回应你。</p></article><article><span>03 / 留住经历</span><h3>离开之后，故事仍在。</h3><p>自动保存进度，随时导出旅程；每一个抉择都有迹可循。</p></article></section>
+      <footer class="home-footer"><span>异世手记 · 穿越人生模拟器</span><span>本地玩法无需联网 · 自由叙事由 AI 生成</span></footer>
+    </div>
+  </section>
+
+  <!-- 开始界面 -->
+  <div id="screen-start" class="screen hidden">
+    <div class="start-inner">
+      <button id="btn-setup-back" class="ghost">← 返回首页</button>
+      <div class="brand">
+        <div class="brand-ornament">01 选择世界 / 02 觉醒天赋 / 03 开始人生</div>
+        <h1 class="game-logo">写下你的新身份</h1>
+        <p class="subtitle">不必准备好一切。先选一片想去的天地。</p>
+      </div>
+
+      <div class="setup-panel">
+        <label class="field">
+          <span class="field-label">你的名字</span>
+          <input id="input-name" type="text" placeholder="输入穿越者姓名" maxlength="12">
+        </label>
+
+        <div class="field">
+          <span class="field-label">选择穿越世界</span>
+          <div id="world-list" class="world-list"></div>
+        </div>
+
+        <div class="start-actions">
+          <button id="btn-start" class="primary btn-xl">开 启 穿 越</button>
+        </div>
+        <div class="start-links">
+          <button id="btn-settings" class="ghost">模型设置</button>
+          <span class="dot-sep">·</span>
+          <button id="btn-saves" class="ghost">存档管理</button>
+        </div>
+      </div>
+      <div id="start-tip" class="tip"></div>
+    </div>
+  </div>
+
+  <!-- 穿越过场 -->
+  <div id="screen-transition" class="screen hidden">
+    <div class="transition-inner">
+      <div class="vortex"></div>
+      <div id="transition-text" class="transition-text"></div>
+      <div class="transition-skip-hint">点击任意处跳过</div>
+    </div>
+  </div>
+
+  <!-- 天赋觉醒 -->
+  <div id="screen-awakening" class="screen hidden">
+    <div class="awakening-inner">
+      <div id="awaken-ornament" class="awaken-ornament"></div>
+      <h2 class="awaken-title">命运觉醒</h2>
+      <p class="awaken-sub">时空乱流中，一缕机缘落在你的灵魂之上。选择你的天赋：</p>
+      <div id="talent-list" class="talent-list"></div>
+      <div class="awaken-foot">
+        <button id="btn-talent-confirm" class="primary btn-xl" disabled>踏 入 此 界</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 游戏界面 -->
+  <div id="screen-game" class="screen hidden">
+    <header class="game-header">
+      <button id="btn-back" class="ghost small">← 首页</button>
+      <div class="game-heading"><div id="game-title" class="game-title"></div><span id="mode-badge"></span></div>
+      <div class="header-right">
+        <button id="btn-toggle-status" class="ghost small">角色</button>
+        <button id="btn-journey-panel" class="ghost small" aria-expanded="false">行囊 / 地图</button>
+        <button id="btn-game-settings" class="ghost small">设置</button>
+        <button id="btn-save" class="ghost small">存档</button>
+      </div>
+    </header>
+    <div class="game-body">
+      <aside id="status-panel" class="status-panel" aria-label="角色属性"></aside>
+      <main class="story-wrap">
+        <div class="scene-banner"><div id="scene-art" class="atlas-art"></div><div class="scene-caption"><span id="scene-subtitle"></span><h2 id="scene-location"></h2><p id="game-date"></p></div><span id="energy-label"></span></div>
+        <div class="reading-toolbar"><span>你的旅程</span><div><button id="btn-font-size" class="ghost small" aria-label="调整正文字号">Aa</button><button id="btn-read-mode" class="ghost small" aria-pressed="false">专注阅读</button><button id="btn-latest" class="ghost small">最新 ↓</button></div></div>
+        <div id="story-area" class="story-area" aria-label="剧情记录"></div>
+      </main>
+      <aside id="journey-panel" class="journey-panel" aria-label="探索与行囊">
+        <div class="journey-panel-heading"><span>行旅手册</span><button id="btn-close-panel" class="ghost small" aria-label="关闭行旅手册">关闭</button></div>
+        <div class="journey-tabs" role="tablist"><button data-journey-tab="map" role="tab">探索</button><button data-journey-tab="bag" role="tab">行囊</button><button data-journey-tab="goals" role="tab">目标</button><button data-journey-tab="journal" role="tab">手记</button></div>
+        <div id="journey-content" class="journey-content"></div>
+      </aside>
+    </div>
+    <footer class="action-bar">
+      <div id="generation-recovery" class="generation-recovery hidden" role="status">
+        <span id="generation-error"></span>
+        <button id="btn-retry-generation" class="small">重试原操作</button>
+        <button id="btn-recovery-settings" class="ghost small">检查模型设置</button>
+      </div>
+      <button id="btn-cancel-generation" class="ghost small hidden">取消生成</button>
+      <div class="quick-actions" aria-label="即时玩法"><button id="btn-explore">探索地图 ↗</button><button id="btn-train" data-local-action="train">研习</button><button id="btn-rest" data-local-action="rest">休整</button><button id="btn-work" data-local-action="work">营生</button><button id="btn-inventory">行囊</button><span>即时结算</span></div>
+      <div id="options-area" class="options-area"></div>
+      <div class="input-row">
+        <input id="input-action" type="text" placeholder="或者，输入你想做的任何事 / 想问的任何问题……" maxlength="200">
+        <button id="btn-act" class="primary">行动</button>
+        <button id="btn-ask" class="ghost">提问</button>
+      </div>
+      <div id="input-hint" class="input-hint" aria-live="polite"></div>
+      <div id="save-status" role="status"></div>
+    </footer>
+  </div>
+
+  <!-- 设置弹窗 -->
+  <div id="modal-settings" class="modal hidden">
+    <div class="modal-box">
+      <h2>模型设置</h2>
+      <label class="field">
+        <span class="field-label">① 选择模型服务（已预设好接口与模型）</span>
+        <select id="preset-select"></select>
+      </label>
+      <div id="preset-note" class="preset-note"></div>
+      <label class="field">
+        <span class="field-label">② 填入你的 API Key</span>
+        <input id="input-key" type="password" placeholder="sk-...">
+      </label>
+      <a id="key-link" class="key-link" href="#" target="_blank" rel="noopener noreferrer">前往获取 API Key →</a>
+
+      <details class="advanced">
+        <summary>高级设置（一般无需修改）</summary>
+        <label class="field">
+          <span class="field-label">接口地址（baseURL）</span>
+          <input id="input-baseurl" type="text" placeholder="https://api.deepseek.com">
+        </label>
+        <label class="field">
+          <span class="field-label">模型名称</span>
+          <div class="model-row">
+            <input id="input-model" type="text" placeholder="deepseek-v4-flash">
+            <button id="btn-fetch-models" class="ghost small">获取模型列表</button>
+          </div>
+        </label>
+        <label class="field hidden" id="model-select-field">
+          <span class="field-label">选择模型</span>
+          <select id="model-select"></select>
+        </label>
+      </details>
+      <div id="fetch-status" class="fetch-status" role="status"></div>
+
+      <p class="tip">Key 仅用于当前页面会话，刷新后需重新填写，不写入存档或发布文件。请求会将 Key 和相关剧情发送给你选择的模型服务商，不发送给 GitHub。服务费用由你的模型账号承担。</p>
+      <p class="tip">请仅使用可信的公网 HTTPS 接口。服务商需支持浏览器跨域（CORS）；GitHub Pages 无法代为转发请求。旧版保存在本机的 Key 会迁移到当前会话并清除持久副本。</p>
+      <div class="modal-actions">
+        <button id="btn-settings-save" class="primary">保存</button>
+        <button id="btn-settings-cancel" class="ghost">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 存档弹窗 -->
+  <div id="modal-saves" class="modal hidden">
+    <div class="modal-box">
+      <h2>旅程存档</h2>
+      <div class="save-tools"><button id="btn-export-save" class="small">导出当前旅程</button><label class="import-label">导入旅程<input id="input-import-save" type="file" accept=".json,application/json"></label></div>
+      <p class="panel-intro">进度保存在本机浏览器，可导出备份或转移。存档保留完整角色与探索进度、最近 240 段剧情及 300 次抉择。</p>
+      <div id="saves-list" class="saves-list"></div>
+      <div class="modal-actions">
+        <button id="btn-saves-cancel" class="ghost">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 结局弹窗 -->
+  <div id="modal-ending" class="modal hidden">
+    <div class="modal-box">
+      <h2 id="ending-title" class="ending-title">旅途结束</h2>
+      <div id="ending-text" class="ending-text"></div>
+      <div id="ending-stats" class="ending-stats"></div>
+      <div id="ending-review" class="ending-review"></div>
+      <div class="modal-actions">
+        <button id="btn-ending-restart" class="primary">重新穿越</button>
+        <button id="btn-ending-close" class="ghost">查看回顾</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden" role="status"></div>
+  <script src="js/config.js"></script>
+  <script src="js/worlds.js"></script>
+  <script src="js/adventure.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/round.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/events.js"></script>
+  <script src="js/network.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/interface.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
